@@ -27,6 +27,8 @@
   .intro{padding:56px 0 8px;text-align:center;}
   .intro h1{margin-top:14px;font-size:clamp(1.7rem,4vw,2.2rem);line-height:1.5;}
   .intro p{margin-top:16px;color:#5C564A;font-size:.98rem;}
+  .program-tag{margin-top:14px;font-size:.9rem;color:var(--leather);font-weight:700;}
+  .pay-note{margin-top:8px;}
   main{padding-bottom:80px;}
   .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:32px 28px;margin-top:28px;}
   .card h2{font-size:1.05rem;margin-bottom:18px;}
@@ -73,9 +75,10 @@
 <main>
   <div class="wrap">
     <div class="intro">
-      <div class="eyebrow" style="display:flex;justify-content:center;">FREE FOOT CHECK</div>
-      <h1>무료 발 건강 점검 신청</h1>
-      <p>5분이면 충분합니다. 아래 내용을 채워주시면 보나스텝이 직접 확인하고 연락드릴게요.</p>
+      <div class="eyebrow" id="formEyebrow" style="display:flex;justify-content:center;">FREE FOOT CHECK</div>
+      <h1 id="formTitle">무료 발 건강 점검 신청</h1>
+      <p id="formIntro">5분이면 충분합니다. 아래 내용을 채워주시면 보나스텝이 직접 확인하고 연락드릴게요.</p>
+      <p class="program-tag" id="programTag">선택한 프로그램: 무료 발 건강 점검</p>
     </div>
 
     <form id="intakeForm">
@@ -146,6 +149,7 @@
         <button type="button" class="btn btn-brass" id="sendEmailBtn">작성한 내용 이메일로 보내기</button>
         <a class="btn btn-outline" id="kakaoBtn" href="#" target="_blank" rel="noopener">카카오톡 채널로 문의하기</a>
         <div class="submit-note">위 버튼 중 하나로 신청해주시면 보나스텝이 1~2일 내 연락드립니다</div>
+        <div class="submit-note pay-note" id="payNote" style="display:none;">결제와 일정 안내는 신청 확인 후 개별로 연락드립니다</div>
       </div>
     </form>
   </div>
@@ -157,6 +161,27 @@
   var EMAIL_TO = 'REPLACE_WITH_REAL_EMAIL@example.com';
   var KAKAO_CHANNEL_URL = 'https://pf.kakao.com/REPLACE_WITH_REAL_CHANNEL_ID';
   document.getElementById('kakaoBtn').href = KAKAO_CHANNEL_URL;
+
+  var STEP_NAMES = {
+    '1': '무료 발 건강 점검',
+    '2': '발 회복 스타터 구독',
+    '3': '4주 발 기능 회복 챌린지',
+    '4': '발살리는 산책(대면 코칭)',
+    '5': '1:1 발 건강 & 워킹 웰니스 코칭',
+    '6': '보나스텝 맞춤 수제화'
+  };
+  var stepParam = new URLSearchParams(window.location.search).get('step') || '1';
+  if(!STEP_NAMES[stepParam]) stepParam = '1';
+  var programName = STEP_NAMES[stepParam];
+  var isFree = (stepParam === '1');
+
+  document.getElementById('programTag').textContent = '선택한 프로그램: ' + programName;
+  document.title = '보나스텝 | ' + programName + ' 신청';
+  if(!isFree){
+    document.getElementById('formEyebrow').textContent = 'PROGRAM APPLICATION';
+    document.getElementById('formTitle').textContent = programName + ' 신청';
+    document.getElementById('payNote').style.display = 'block';
+  }
 
   document.querySelectorAll('#signalGroup .check-row').forEach(function(row){
     row.addEventListener('click', function(){ row.classList.toggle('checked'); });
@@ -173,7 +198,7 @@
       signals.push(el.textContent);
     });
     var lines = [];
-    lines.push('[보나스텝 무료 발 건강 점검 신청]');
+    lines.push('[보나스텝 ' + programName + ' 신청]');
     lines.push('이름: ' + name);
     lines.push('연락처: ' + phone);
     lines.push('나이대: ' + age);
@@ -193,7 +218,7 @@
       return;
     }
     var data = buildSummary();
-    var subject = encodeURIComponent('[보나스텝] 무료 발 건강 점검 신청 - ' + data.name);
+    var subject = encodeURIComponent('[보나스텝] ' + programName + ' 신청 - ' + data.name);
     var body = encodeURIComponent(data.body);
     window.location.href = 'mailto:' + EMAIL_TO + '?subject=' + subject + '&body=' + body;
   });
